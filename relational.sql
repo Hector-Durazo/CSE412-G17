@@ -1,7 +1,7 @@
 CREATE TABLE public.pokemon
 (
     pokemon_id numeric,
-    identifier numeric,
+    identifier text,
     species_id numeric,
     height numeric,
     weight numeric,
@@ -15,7 +15,7 @@ CREATE TABLE public.pokemon
 CREATE TABLE public.abilities
 (
     ability_id numeric,
-    identifier numeric,
+    identifier text,
 
 
     PRIMARY KEY(ability_id)
