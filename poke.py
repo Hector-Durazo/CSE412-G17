@@ -2,7 +2,7 @@ from cProfile import label
 import sys, psycopg2
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import QApplication,QSlider, QMainWindow, QHeaderView, QAbstractItemView, QPushButton, QTableWidget, QTableWidgetItem, QVBoxLayout, QHBoxLayout, QWidget, QLabel, QLineEdit
+from PyQt5.QtWidgets import QApplication,QSlider,QComboBox, QMainWindow, QHeaderView, QAbstractItemView, QPushButton, QTableWidget, QTableWidgetItem, QVBoxLayout, QHBoxLayout, QWidget, QLabel, QLineEdit
 from PyQt5.QtCore import Qt
 def loaddata():
     try:
@@ -80,9 +80,14 @@ class window(QWidget):
 
 
         # Add Slider to VBox
+        heightLabel = QLabel(self)
+        heightLabel.setText('Max height (M)')
+        heightLabel.setAlignment(Qt.AlignCenter)
+        labelLayout.addWidget(heightLabel)
+
         slider1 = QSlider(Qt.Horizontal)
         slider1.setMinimum(0)
-        slider1.setMaximum(4000)
+        slider1.setMaximum(20)
         slider1.setValue(0)
         labelLayout.addWidget(slider1,0, Qt.AlignBottom)
         label3 = QLabel(self)
@@ -93,9 +98,14 @@ class window(QWidget):
 
 
         # Add Slider to VBox
+        weightLabel = QLabel(self)
+        weightLabel.setText('Max Weight (Kg)')
+        weightLabel.setAlignment(Qt.AlignCenter)
+        labelLayout.addWidget(weightLabel)
+
         slider2 = QSlider(Qt.Horizontal)
         slider2.setMinimum(0)
-        slider2.setMaximum(4000)
+        slider2.setMaximum(1000)
         slider2.setValue(0)
         labelLayout.addWidget(slider2, 0, Qt.AlignBottom)
         label4 = QLabel(self)
@@ -103,6 +113,18 @@ class window(QWidget):
         label4.setAlignment(Qt.AlignCenter)
         labelLayout.addWidget(label4 , 0, Qt.AlignTop)
         slider2.valueChanged.connect(label4.setNum)
+
+
+        # Add type combobox to VBox
+        combobox = QComboBox()
+        combobox.addItems(['All', 'Fire', 'Water', 'Grass', 'Electric', 'Ice', 'Fighting', 'Poison', 'Ground', 'Flying', 'Psychic', 'Bug', 'Rock', 'Ghost', 'Dragon', 'Dark', 'Steel', 'Fairy'])
+        labelLayout.addWidget(combobox)
+
+
+        # Add Region combobox to VBox
+        combobox = QComboBox()
+        combobox.addItems([ 'All', 'Kanto', 'Johto', 'Hoenn', 'Sinnoh', 'Unova', 'Kalos'])
+        labelLayout.addWidget(combobox)
 
 
         # Add Button to VBox
