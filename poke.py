@@ -1,9 +1,26 @@
 from cProfile import label
-import sys
+import sys, psycopg2
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication,QSlider, QMainWindow, QHeaderView, QAbstractItemView, QPushButton, QTableWidget, QTableWidgetItem, QVBoxLayout, QHBoxLayout, QWidget, QLabel, QLineEdit
 from PyQt5.QtCore import Qt
+def loaddata():
+    try:
+        connection = psycopg2.connect(user = "postgres", password = "251557251557hd", host = "127.0.0.1"
+                                        , port = "5432", database = "postgres")
+        cursor = connection.cursor()
+        print("Opened database successfully")
+        cursor.execute("SELECT pokemon.identifier FROM pokemon WHERE pokemon.identifier LIKE 's%'")
+        records = cursor.fetchall()
+        print(records)
+
+    except (Exception, psycopg2.Error) as error:
+        print("Error while connecting to PostgreSQL", error)
+    finally:
+        if (connection):
+            cursor.close()
+            connection.close()
+            print("PostgreSQL connection is closed")
 
 class TableWidget(QTableWidget):
     def __init__(self):
@@ -12,7 +29,8 @@ class TableWidget(QTableWidget):
         self.verticalHeader().setDefaultSectionSize(20)
         self.horizontalHeader().setDefaultSectionSize(250)
         self.horizontalHeader().setSectionResizeMode(QHeaderView.Fixed)
-        
+
+
     def _addRow(self):
         rowCount = self.rowCount()
         self.insertRow(rowCount)
@@ -87,13 +105,19 @@ class window(QWidget):
         slider2.valueChanged.connect(label4.setNum)
 
 
+        # Add Button to VBox
+        button1 = QPushButton('Search')
+        button1.clicked.connect(table._addRow)
+        labelLayout.addWidget(button1)
+
+
         # Add widgets to mainLayout
         mainLayout.addWidget(vwidget)
         mainLayout.addWidget(table)
 
         self.setLayout(mainLayout)
 
-
+loaddata()
 app = QApplication(sys.argv)
 win = window()
 win.show()
