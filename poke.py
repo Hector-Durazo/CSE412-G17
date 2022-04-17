@@ -1,71 +1,37 @@
 from cProfile import label
+from logging import PlaceHolder
+import os
 import sys, psycopg2
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtGui import QPixmap
+from PyQt5 import QtSql
 from PyQt5.QtWidgets import QApplication,QSlider,QComboBox, QMainWindow, QHeaderView, QAbstractItemView, QPushButton, QTableWidget, QTableWidgetItem, QVBoxLayout, QHBoxLayout, QWidget, QLabel, QLineEdit
 from PyQt5.QtCore import Qt
-def loaddata():
-    try:
-        connection = psycopg2.connect(user = "postgres", password = "251557251557hd", host = "127.0.0.1"
-                                        , port = "5432", database = "postgres")
-        cursor = connection.cursor()
-        print("Opened database successfully")
-        cursor.execute("SELECT pokemon.identifier FROM pokemon WHERE pokemon.identifier LIKE 's%'")
-        records = cursor.fetchall()
-        print(records)
-
-    except (Exception, psycopg2.Error) as error:
-        print("Error while connecting to PostgreSQL", error)
-    finally:
-        if (connection):
-            cursor.close()
-            connection.close()
-            print("PostgreSQL connection is closed")
-
-class TableWidget(QTableWidget):
-    def __init__(self):
-        super().__init__(1,4)
-        self.setHorizontalHeaderLabels(list('ABC'))
-        self.verticalHeader().setDefaultSectionSize(20)
-        self.horizontalHeader().setDefaultSectionSize(250)
-        self.horizontalHeader().setSectionResizeMode(QHeaderView.Fixed)
-
-
-    def _addRow(self):
-        rowCount = self.rowCount()
-        self.insertRow(rowCount)
-    
-    def _removeRow(self):
-        if self.rowCount() > 0:
-            self.removeRow(self.rowCount()-1)
-    
-    def _copyRow(self):
-        self.insertRow(self.rowCount())
-        rowCount = self.rowCount()
-        columnCount = self.columnCount()
-        
-        for j in range(columnCount):
-            if not self.item(rowCount-2, j) is None:
-                self.setItem(rowCount-1, j, QTableWidgetItem(self.item(rowCount-2, j).text()))
 
 class window(QWidget):
     def __init__(self):
         super().__init__()
         self.resize(1280, 600)
-        
-        mainLayout = QHBoxLayout()
-        table = TableWidget()
 
+        mainLayout = QHBoxLayout()
+        
         # Make VBox for window layout
         labelLayout = QVBoxLayout()
         vwidget = QWidget()
         vwidget.setLayout(labelLayout)
         vwidget.setContentsMargins(50,0,50,0)
-        vwidget.setFixedWidth(400)
+        vwidget.setFixedWidth(300)
+
+        # Make new VBox
+        labelLayout2 = QVBoxLayout()
+        vwidget2 = QWidget()
+        vwidget2.setLayout(labelLayout2)
+        vwidget2.setContentsMargins(50,0,50,0)
+        vwidget2.setFixedWidth(300)
 
 
         # Add Pokeball image to VBox
-        imagelabel = QLabel(self)
+        imagelabel = QLabel()
         image = QPixmap('poke.png')
         image = image.scaled(200, 200, Qt.KeepAspectRatio)
         imagelabel.setPixmap(image)
@@ -73,21 +39,30 @@ class window(QWidget):
         labelLayout.addWidget(imagelabel)
 
 
-        # Add Searchbar to VBox
+        def search(self):
+            sqlquery = "SELECT * FROM pokemon WHERE pokemon.identifier LIKE'" + text1.text() + "%'"
+            cur.execute(sqlquery)
+            tableUpdate(cur)
+
+  
         text1 = QLineEdit()
         text1.setPlaceholderText('Search')
         labelLayout.addWidget(text1)
+        text1.textChanged.connect(search)
 
 
         # Add Slider to VBox
+        def slider1Changed(self):
+            sqlquery = "SELECT * FROM pokemon WHERE pokemon.height < " + str(slider1.value())
+            cur.execute(sqlquery)
+            tableUpdate(cur)
         heightLabel = QLabel(self)
         heightLabel.setText('Max height (M)')
         heightLabel.setAlignment(Qt.AlignCenter)
         labelLayout.addWidget(heightLabel)
-
         slider1 = QSlider(Qt.Horizontal)
         slider1.setMinimum(0)
-        slider1.setMaximum(20)
+        slider1.setMaximum(30)
         slider1.setValue(0)
         labelLayout.addWidget(slider1,0, Qt.AlignBottom)
         label3 = QLabel(self)
@@ -95,7 +70,8 @@ class window(QWidget):
         label3.setAlignment(Qt.AlignCenter)
         labelLayout.addWidget(label3, 0, Qt.AlignTop)
         slider1.valueChanged.connect(label3.setNum)
-
+        slider1.valueChanged.connect(slider1Changed)
+        
 
         # Add Slider to VBox
         weightLabel = QLabel(self)
@@ -127,19 +103,65 @@ class window(QWidget):
         labelLayout.addWidget(combobox)
 
 
-        # Add Button to VBox
-        button1 = QPushButton('Search')
-        button1.clicked.connect(table._addRow)
-        labelLayout.addWidget(button1)
+        # select row in table
+        def tableClicked(self):
+            row = table.currentRow()
+            #get the data from the table
+            data = table.item(row, 1).text()
+            print(data)
+            # select icon from icons folder
+            iconLabel = QLabel()
+            for icon in os.listdir('icons'):
+                if icon == data + '.png':
+                    icon = QPixmap('icons/' + data + '.png')
+                    icon = icon.scaled(200, 200, Qt.KeepAspectRatio)
+                    iconLabel.setPixmap(icon)
+                    iconLabel.setAlignment(Qt.AlignCenter)
+                    #replace current image with new image
+                    labelLayout2.addWidget(iconLabel)
+                    break
+                    
+        #create table
+        table = QTableWidget()
+        table.setFixedWidth(555)
+        table.setRowCount(0)
+        table.setColumnCount(4)
+        table.setColumnWidth(0, 100)
+        table.setColumnWidth(1, 150)
+        table.setColumnWidth(2, 150)
+        table.setColumnWidth(3, 100)
+        table.setRowHeight(0, 30)
+        table.setHorizontalHeaderLabels(['id','Name', 'Height', 'Weight'])
+        table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        table.cellClicked.connect(tableClicked)
+
+    
+        def tableUpdate(cur):
+            table.setRowCount(cur.rowcount)
+            tablerow= 0
+            for row in cur.fetchall():
+                table.setItem(tablerow,0,QTableWidgetItem(str(row[0])))
+                table.setItem(tablerow,1,QTableWidgetItem(str(row[1])))
+                table.setItem(tablerow,2,QTableWidgetItem(str(row[3]/10)))
+                table.setItem(tablerow,3,QTableWidgetItem(str(row[4]/10)))
+                tablerow += 1
+        connection = psycopg2.connect(user = "postgres", password = "251557251557hd", host = "127.0.0.1"
+                                        , port = "5432", database = "postgres")
+        cur = connection.cursor()
+        sqlquery = "SELECT * FROM pokemon"
+        cur.execute(sqlquery)
+        tableUpdate(cur)
+
+
 
 
         # Add widgets to mainLayout
         mainLayout.addWidget(vwidget)
         mainLayout.addWidget(table)
-
+        mainLayout.addWidget(vwidget2)
         self.setLayout(mainLayout)
 
-loaddata()
 app = QApplication(sys.argv)
 win = window()
 win.show()
