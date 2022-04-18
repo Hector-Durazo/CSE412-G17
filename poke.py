@@ -27,7 +27,21 @@ class window(QWidget):
         vwidget2 = QWidget()
         vwidget2.setLayout(labelLayout2)
         vwidget2.setContentsMargins(50,0,50,0)
-        vwidget2.setFixedWidth(300)
+        vwidget2.setFixedWidth(400)
+
+        #add checkbox to vbox
+        checkbox = QtWidgets.QCheckBox("Show Shiny")
+        checkbox.setChecked(False)
+        # center checkbox
+        labelLayout2.addWidget(checkbox)
+
+        # new vbox for pokemon info
+        labelLayout3 = QVBoxLayout()
+        pkmInfo = QWidget()
+        pkmInfo.setLayout(labelLayout3)
+        pkmInfo.setContentsMargins(50,0,50,0)
+        pkmInfo.setFixedWidth(400)
+
 
 
         # Add Pokeball image to VBox
@@ -102,7 +116,7 @@ class window(QWidget):
         combobox.addItems([ 'All', 'Kanto', 'Johto', 'Hoenn', 'Sinnoh', 'Unova', 'Kalos'])
         labelLayout.addWidget(combobox)
 
-
+        
         # select row in table
         def tableClicked(self):
             row = table.currentRow()
@@ -110,17 +124,45 @@ class window(QWidget):
             data = table.item(row, 1).text()
             print(data)
             # select icon from icons folder
-            iconLabel = QLabel()
-            for icon in os.listdir('icons'):
+
+            # checks if shiny
+            if checkbox.isChecked():
+                icons = 'shiny'
+            else:
+                icons = 'icons'
+
+
+            print('icons: '+ icons)
+            for icon in os.listdir(icons):
                 if icon == data + '.png':
-                    icon = QPixmap('icons/' + data + '.png')
-                    icon = icon.scaled(200, 200, Qt.KeepAspectRatio)
+                    iconLabel = QLabel()
+                    labelLayout2.addWidget(iconLabel)
+                    icon = QPixmap( icons +'/' + data + '.png')
+                    icon = icon.scaled(400, 400, Qt.KeepAspectRatio)
                     iconLabel.setPixmap(icon)
                     iconLabel.setAlignment(Qt.AlignCenter)
-                    #replace current image with new image
-                    labelLayout2.addWidget(iconLabel)
-                    break
                     
+                    labelLayout2.removeWidget(labelLayout2.itemAt(1).widget())
+                    labelLayout3.addWidget(iconLabel)
+                    labelLayout2.addWidget(pkmInfo)
+
+                    #show pokemon info from database
+                    data = table.item(row, 0).text()
+                    sqlquery ="""   SELECT identifier
+                                    FROM abilities, pokemon_abilities
+                                    WHERE abilities.ability_id = pokemon_abilities.ability_id
+                                    AND pokemon_abilities.pokemon_id = """ + str(data) + ";"
+                    cur.execute(sqlquery)
+                    abilities = cur.fetchall()
+                    abilities = [i[0] for i in abilities]
+                    abilities = ', '.join(abilities)
+                    # new lable for abilities
+                    abilitiesLabel = QLabel()
+                    abilitiesLabel.setText('Abilities: ' + abilities)
+                    abilitiesLabel.setAlignment(Qt.AlignCenter)
+                    labelLayout2.addWidget(abilitiesLabel)
+
+
         #create table
         table = QTableWidget()
         table.setFixedWidth(555)
