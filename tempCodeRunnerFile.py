@@ -1,4 +1,3 @@
-icon = QPixmap(iconDrc + '/' + filename)
-        #            icon = icon.scaled(50, 50, Qt.KeepAspectRatio)
-        #            iconLable = QLabel()
-        #            iconLable.setPixmap(icon)
+labelLayout2.removeWidget(labelLayout2.itemAt(1).widget())
+                    labelLayout3.addWidget(iconLabel)
+                    labelLayout2.addWidget(pkmInfo)
