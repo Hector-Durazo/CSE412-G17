@@ -134,7 +134,7 @@ class window(QWidget):
                  fromVar = fromVar+", pokemon_types, types"
             if regionVar != 'all':
                 fromVar = fromVar+", encounters, locations, location_areas, regions"
-            sqlquery= sqlquery = "SELECT * FROM "+ fromVar+" WHERE pokemon.height < "+heightVar+" AND pokemon.weight < "+weightVar
+            sqlquery= sqlquery = "SELECT DISTINCT(pokemon.pokemon_id), pokemon.identifier, pokemon.species_id, pokemon.height, pokemon.weight, pokemon.base_experience FROM "+ fromVar+" WHERE pokemon.height < "+heightVar+" AND pokemon.weight < "+weightVar
             if typeVar != 'all':
                 sqlquery = sqlquery + " AND pokemon.pokemon_id = pokemon_types.pokemon_id AND pokemon_types.type_id = types.type_id AND types.identifier LIKE '"+typeVar+"'"
             if regionVar != 'all':
@@ -217,7 +217,7 @@ class window(QWidget):
                 table.setItem(tablerow,2,QTableWidgetItem(str(row[3]/10)))
                 table.setItem(tablerow,3,QTableWidgetItem(str(row[4]/10)))
                 tablerow += 1
-        connection = psycopg2.connect(user = "postgres", password = "Disney903", host = "127.0.0.1" ,port = "5432", database = "Pokemon")
+        connection = psycopg2.connect(user = "postgres", password = "251557251557hd", host = "127.0.0.1" ,port = "5432", database = "postgres")
         cur = connection.cursor()
         sqlquery = "SELECT * FROM pokemon"
         cur.execute(sqlquery)
