@@ -188,8 +188,7 @@ class window(QWidget):
                 table.setItem(tablerow,2,QTableWidgetItem(str(row[3]/10)))
                 table.setItem(tablerow,3,QTableWidgetItem(str(row[4]/10)))
                 tablerow += 1
-        connection = psycopg2.connect(user = "postgres", password = "251557251557hd", host = "127.0.0.1"
-                                        , port = "5432", database = "postgres")
+        connection = psycopg2.connect(user = "postgres", password = "Disney903", host = "127.0.0.1" ,port = "5432", database = "Pokemon")
         cur = connection.cursor()
         sqlquery = "SELECT * FROM pokemon"
         cur.execute(sqlquery)
