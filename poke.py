@@ -122,19 +122,27 @@ class window(QWidget):
         labelLayout.addWidget(combobox1)
 
         def buttonClicked(self):
-            heightvar = label3.text
-            weightvar = str(slider2.value)
-            nameVar = text1.text
-            typeVar = combobox.currentText()
-            regionVar = combobox1.currentText()
-            sqlquery= sqlquery = """SELECT pokemon.pokemon_id, pokemon.pokemon_identifier, pokemon.weight, pokemon.height FROM pokemon, encounters, locations, location_areas, regions, pokemon_types, types WHERE pokemon.height < {} AND pokemon.weight < {} """.format(heightvar, weightvar);
-            if typeVar != 'All':
-               sqlquery = sqlquery + " AND pokemon.pokemon_id = pokemon_types.pokemon_id AND pokemon_types.type_id = types.type_id AND types.identifier LIKE '"+typeVar+"'"
-            if regionVar != 'All':
+            heighttemp = slider1.value()
+            heightVar = str(heighttemp)
+            weightTemp= slider2.value()
+            weightVar = str(weightTemp)
+            fromVar = "pokemon"
+            nameVar = text1.text()
+            typeVar = combobox.currentText().lower()
+            regionVar = combobox1.currentText().lower()
+            if typeVar != 'all':
+                 fromVar = fromVar+", pokemon_types, types"
+            if regionVar != 'all':
+                fromVar = fromVar+", encounters, locations, location_areas, regions"
+            sqlquery= sqlquery = "SELECT * FROM "+ fromVar+" WHERE pokemon.height < "+heightVar+" AND pokemon.weight < "+weightVar
+            if typeVar != 'all':
+                sqlquery = sqlquery + " AND pokemon.pokemon_id = pokemon_types.pokemon_id AND pokemon_types.type_id = types.type_id AND types.identifier LIKE '"+typeVar+"'"
+            if regionVar != 'all':
                sqlquery= sqlquery+" AND pokemon.pokemon_id = encounters.pokemon_id AND location_areas.location_area_id = encounters.location_area_id AND location_areas.location_id = locations.location_id AND locations.region_id = regions.region_id AND regions.identifier LIKE '"+ regionVar +"'"
             if nameVar != "":
-               sqlquery = sqlquery + " pokemon.identifier LIKE '{}%'".format(nameVar)
+               sqlquery = sqlquery + " AND pokemon.identifier LIKE '"+nameVar+"%'"
             
+            print(sqlquery)
             cur.execute(sqlquery)
             tableUpdate(cur)
 
