@@ -11,7 +11,7 @@ from PyQt5.QtCore import Qt
 class window(QWidget):
     def __init__(self):
         super().__init__()
-        self.resize(1280, 600)
+        self.resize(1200, 600)
 
         mainLayout = QHBoxLayout()
         
@@ -32,15 +32,32 @@ class window(QWidget):
         labelLayout2 = QVBoxLayout()
         vwidget2 = QWidget()
         vwidget2.setLayout(labelLayout2)
-        vwidget2.setContentsMargins(50,0,50,0)
         vwidget2.setFixedWidth(400)
+
         abilitiesLabel = QLabel()
-        abilitiesLabel.setAlignment(Qt.AlignCenter)
         iconLabel = QLabel()
+        regionLabel = QLabel()
+        typeLabel = QLabel()
+
+        abilitiesLabel.setAlignment(Qt.AlignLeft)
         iconLabel.setAlignment(Qt.AlignCenter)
+        regionLabel.setAlignment(Qt.AlignLeft)
+        typeLabel.setAlignment(Qt.AlignLeft)
+
+        # increase font size
+        abilitiesLabel.setFont(QtGui.QFont("Arial", 12))
+        iconLabel.setFont(QtGui.QFont("Arial", 12))
+        regionLabel.setFont(QtGui.QFont("Arial", 12))
+        typeLabel.setFont(QtGui.QFont("Arial", 12))
+
+
+        
         labelLayout2.addWidget(checkbox)
         labelLayout2.addWidget(iconLabel)
+        labelLayout2.addWidget(typeLabel)
+        labelLayout2.addWidget(regionLabel)
         labelLayout2.addWidget(abilitiesLabel)
+
 
 
 
@@ -124,7 +141,7 @@ class window(QWidget):
             row = table.currentRow()
             #get the data from the table
             data = table.item(row, 1).text()
-            print(data)
+           #print(data)
             # select icon from icons folder
 
             # checks if shiny
@@ -134,15 +151,20 @@ class window(QWidget):
                 icons = 'icons'
 
 
-            print('icons: '+ icons)
+            #print('icons: '+ icons)
             for icon in os.listdir(icons):
                 if icon == data + '.png':
                     icon = QPixmap( icons +'/' + data + '.png')
                     icon = icon.scaled(400, 400, Qt.KeepAspectRatio)
                     iconLabel.setPixmap(icon)
                     iconLabel.setAlignment(Qt.AlignCenter)
-                #else:
-
+                    break
+                else:
+                    icon = QPixmap( 'unknown-item.png')
+                    icon = icon.scaled(300, 300, Qt.KeepAspectRatio)
+                    iconLabel.setPixmap(icon)
+                    #iconLabel.setText('No Icon')
+                    iconLabel.setAlignment(Qt.AlignCenter)
             #show pokemon info from database
             data = table.item(row, 0).text()
             sqlquery ="""   SELECT identifier
@@ -155,8 +177,41 @@ class window(QWidget):
             abilities = ', '.join(abilities)
             abilitiesLabel.setText('Abilities: ' + abilities)
 
-                    
+            #show pokemon region
+            sqlquery ="""SELECT DISTINCT regions.identifier FROM pokemon, encounters, locations, location_areas, regions 
+                            WHERE pokemon.pokemon_id = encounters.pokemon_id 
+                            AND location_areas.location_area_id = encounters.location_area_id 
+                            AND location_areas.location_id = locations.location_id 
+                            AND locations.region_id = regions.region_id 
+                            AND pokemon.pokemon_id = '""" + str(data) + """';"""
+            cur.execute(sqlquery)
+            region = cur.fetchall()
+            #print(region)
+            if region.__len__() == 0:
+                region = 'No region'
+            else:
+                region = [i[0] for i in region]
+                region = ', '.join(region)
+            regionLabel.setText('Region: ' + region)
 
+            #show pokemon type
+            sqlquery ="""SELECT DISTINCT types.identifier FROM pokemon, pokemon_types, types
+                            WHERE pokemon.pokemon_id = pokemon_types.pokemon_id
+                            AND pokemon_types.type_id = types.type_id
+                            AND pokemon.pokemon_id = '""" + str(data) + """';"""
+            cur.execute(sqlquery)
+            types = cur.fetchall()
+            if types.__len__() == 0:
+                types = 'No types'
+            else:
+                types = [i[0] for i in types]
+                types = ', '.join(types)
+            typeLabel.setText('Types: ' + types)
+
+
+
+
+                    
 
         #create table
         table = QTableWidget()
