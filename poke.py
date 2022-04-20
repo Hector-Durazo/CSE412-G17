@@ -8,13 +8,19 @@ from PyQt5 import QtSql
 from PyQt5.QtWidgets import QApplication,QSlider,QComboBox, QMainWindow, QHeaderView, QAbstractItemView, QPushButton, QTableWidget, QTableWidgetItem, QVBoxLayout, QHBoxLayout, QWidget, QLabel, QLineEdit
 from PyQt5.QtCore import Qt
 
+
+
 class window(QWidget):
     def __init__(self):
         super().__init__()
         self.resize(1200, 600)
-
+        self.setWindowTitle("Pokemon Database")
         mainLayout = QHBoxLayout()
-        
+        # change window title icon to pokemon logo
+        self.setWindowIcon(QtGui.QIcon("poke.png"))
+        # change window background to dark grey
+
+
         # Make VBox for window layout
         labelLayout = QVBoxLayout()
         vwidget = QWidget()
@@ -33,22 +39,26 @@ class window(QWidget):
         vwidget2 = QWidget()
         vwidget2.setLayout(labelLayout2)
         vwidget2.setFixedWidth(400)
+       
 
         abilitiesLabel = QLabel()
         iconLabel = QLabel()
         regionLabel = QLabel()
         typeLabel = QLabel()
+        weightHightLabel = QLabel()
 
         abilitiesLabel.setAlignment(Qt.AlignLeft)
         iconLabel.setAlignment(Qt.AlignCenter)
         regionLabel.setAlignment(Qt.AlignLeft)
         typeLabel.setAlignment(Qt.AlignLeft)
+        weightHightLabel.setAlignment(Qt.AlignLeft)
 
         # increase font size
         abilitiesLabel.setFont(QtGui.QFont("Arial", 12))
         iconLabel.setFont(QtGui.QFont("Arial", 12))
         regionLabel.setFont(QtGui.QFont("Arial", 12))
         typeLabel.setFont(QtGui.QFont("Arial", 12))
+        weightHightLabel.setFont(QtGui.QFont("Arial", 12))
 
 
         
@@ -57,9 +67,7 @@ class window(QWidget):
         labelLayout2.addWidget(typeLabel)
         labelLayout2.addWidget(regionLabel)
         labelLayout2.addWidget(abilitiesLabel)
-
-
-
+        labelLayout2.addWidget(weightHightLabel)
 
 
 
@@ -77,7 +85,7 @@ class window(QWidget):
             cur.execute(sqlquery)
             tableUpdate(cur)
 
-  
+        # Add search bar to VBox
         text1 = QLineEdit()
         text1.setPlaceholderText('Search')
         labelLayout.addWidget(text1)
@@ -89,6 +97,7 @@ class window(QWidget):
             sqlquery = "SELECT * FROM pokemon WHERE pokemon.height < " + str(slider1.value())
             cur.execute(sqlquery)
             tableUpdate(cur)
+            
         heightLabel = QLabel(self)
         heightLabel.setText('Max height (M)')
         heightLabel.setAlignment(Qt.AlignCenter)
@@ -208,7 +217,10 @@ class window(QWidget):
                 types = ', '.join(types)
             typeLabel.setText('Types: ' + types)
 
-
+            #show pokemon weight and hight
+            weight = table.item(row, 3).text()
+            height = table.item(row, 2).text()
+            weightHightLabel.setText('Weight: ' + weight + ' Kg' + '\n\n' + 'Height: ' + height + ' M')
 
 
                     
