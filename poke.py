@@ -22,25 +22,27 @@ class window(QWidget):
         vwidget.setContentsMargins(50,0,50,0)
         vwidget.setFixedWidth(300)
 
+
+        #add checkbox to vbox
+        checkbox = QtWidgets.QCheckBox("Show Shiny")
+        checkbox.setChecked(False)
+        
+
         # Make new VBox
         labelLayout2 = QVBoxLayout()
         vwidget2 = QWidget()
         vwidget2.setLayout(labelLayout2)
         vwidget2.setContentsMargins(50,0,50,0)
         vwidget2.setFixedWidth(400)
-
-        #add checkbox to vbox
-        checkbox = QtWidgets.QCheckBox("Show Shiny")
-        checkbox.setChecked(False)
-        # center checkbox
+        abilitiesLabel = QLabel()
+        abilitiesLabel.setAlignment(Qt.AlignCenter)
+        iconLabel = QLabel()
+        iconLabel.setAlignment(Qt.AlignCenter)
         labelLayout2.addWidget(checkbox)
+        labelLayout2.addWidget(iconLabel)
+        labelLayout2.addWidget(abilitiesLabel)
 
-        # new vbox for pokemon info
-        labelLayout3 = QVBoxLayout()
-        pkmInfo = QWidget()
-        pkmInfo.setLayout(labelLayout3)
-        pkmInfo.setContentsMargins(50,0,50,0)
-        pkmInfo.setFixedWidth(400)
+
 
 
 
@@ -135,32 +137,25 @@ class window(QWidget):
             print('icons: '+ icons)
             for icon in os.listdir(icons):
                 if icon == data + '.png':
-                    iconLabel = QLabel()
-                    labelLayout2.addWidget(iconLabel)
                     icon = QPixmap( icons +'/' + data + '.png')
                     icon = icon.scaled(400, 400, Qt.KeepAspectRatio)
                     iconLabel.setPixmap(icon)
                     iconLabel.setAlignment(Qt.AlignCenter)
-                    
-                    labelLayout2.removeWidget(labelLayout2.itemAt(1).widget())
-                    labelLayout3.addWidget(iconLabel)
-                    labelLayout2.addWidget(pkmInfo)
+                #else:
 
-                    #show pokemon info from database
-                    data = table.item(row, 0).text()
-                    sqlquery ="""   SELECT identifier
-                                    FROM abilities, pokemon_abilities
-                                    WHERE abilities.ability_id = pokemon_abilities.ability_id
-                                    AND pokemon_abilities.pokemon_id = """ + str(data) + ";"
-                    cur.execute(sqlquery)
-                    abilities = cur.fetchall()
-                    abilities = [i[0] for i in abilities]
-                    abilities = ', '.join(abilities)
-                    # new lable for abilities
-                    abilitiesLabel = QLabel()
-                    abilitiesLabel.setText('Abilities: ' + abilities)
-                    abilitiesLabel.setAlignment(Qt.AlignCenter)
-                    labelLayout2.addWidget(abilitiesLabel)
+            #show pokemon info from database
+            data = table.item(row, 0).text()
+            sqlquery ="""   SELECT identifier
+                            FROM abilities, pokemon_abilities
+                            WHERE abilities.ability_id = pokemon_abilities.ability_id
+                            AND pokemon_abilities.pokemon_id = """ + str(data) + ";"
+            cur.execute(sqlquery)
+            abilities = cur.fetchall()
+            abilities = [i[0] for i in abilities]
+            abilities = ', '.join(abilities)
+            abilitiesLabel.setText('Abilities: ' + abilities)
+
+                    
 
 
         #create table
