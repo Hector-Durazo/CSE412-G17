@@ -97,7 +97,7 @@ class window(QWidget):
             sqlquery = "SELECT * FROM pokemon WHERE pokemon.height < " + str(slider1.value())
             cur.execute(sqlquery)
             tableUpdate(cur)
-            
+
         heightLabel = QLabel(self)
         heightLabel.setText('Max height (M)')
         heightLabel.setAlignment(Qt.AlignCenter)
@@ -141,7 +141,7 @@ class window(QWidget):
 
         # Add Region combobox to VBox
         combobox = QComboBox()
-        combobox.addItems([ 'All', 'Kanto', 'Johto', 'Hoenn', 'Sinnoh', 'Unova', 'Kalos'])
+        combobox.addItems([ 'All', 'Kanto', 'Johto', 'Hoenn', 'Sinnoh', 'Unova', 'Kalos', 'Alola', 'Galar'])
         labelLayout.addWidget(combobox)
 
         
