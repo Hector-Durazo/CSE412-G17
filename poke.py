@@ -79,24 +79,12 @@ class window(QWidget):
         imagelabel.setAlignment(Qt.AlignCenter)
         labelLayout.addWidget(imagelabel)
 
-
-        def search(self):
-            sqlquery = "SELECT * FROM pokemon WHERE pokemon.identifier LIKE'" + text1.text() + "%'"
-            cur.execute(sqlquery)
-            tableUpdate(cur)
-
         # Add search bar to VBox
         text1 = QLineEdit()
         text1.setPlaceholderText('Search')
         labelLayout.addWidget(text1)
-        text1.textChanged.connect(search)
+        #text1.textChanged.connect(valueChanged)
 
-
-        # Add Slider to VBox
-        def slider1Changed(self):
-            sqlquery = "SELECT * FROM pokemon WHERE pokemon.height < " + str(slider1.value())
-            cur.execute(sqlquery)
-            tableUpdate(cur)
 
         heightLabel = QLabel(self)
         heightLabel.setText('Max height (M)')
@@ -105,14 +93,14 @@ class window(QWidget):
         slider1 = QSlider(Qt.Horizontal)
         slider1.setMinimum(0)
         slider1.setMaximum(30)
-        slider1.setValue(0)
+        slider1.setValue(30)
         labelLayout.addWidget(slider1,0, Qt.AlignBottom)
         label3 = QLabel(self)
         label3.setText('0')
         label3.setAlignment(Qt.AlignCenter)
         labelLayout.addWidget(label3, 0, Qt.AlignTop)
         slider1.valueChanged.connect(label3.setNum)
-        slider1.valueChanged.connect(slider1Changed)
+
         
 
         # Add Slider to VBox
@@ -124,7 +112,7 @@ class window(QWidget):
         slider2 = QSlider(Qt.Horizontal)
         slider2.setMinimum(0)
         slider2.setMaximum(1000)
-        slider2.setValue(0)
+        slider2.setValue(1000)
         labelLayout.addWidget(slider2, 0, Qt.AlignBottom)
         label4 = QLabel(self)
         label4.setText('0')
@@ -135,23 +123,61 @@ class window(QWidget):
 
         # Add type combobox to VBox
         combobox = QComboBox()
-        combobox.addItems(['All', 'Fire', 'Water', 'Grass', 'Electric', 'Ice', 'Fighting', 'Poison', 'Ground', 'Flying', 'Psychic', 'Bug', 'Rock', 'Ghost', 'Dragon', 'Dark', 'Steel', 'Fairy'])
+        combobox.addItems([ 'All', 'Fire', 'Water', 'Grass', 'Electric', 'Ice', 'Fighting', 'Poison', 'Ground', 
+                            'Flying', 'Psychic', 'Bug', 'Rock', 'Ghost', 'Dragon', 'Dark', 'Steel', 'Fairy'])
         labelLayout.addWidget(combobox)
 
 
         # Add Region combobox to VBox
-        combobox = QComboBox()
-        combobox.addItems([ 'All', 'Kanto', 'Johto', 'Hoenn', 'Sinnoh', 'Unova', 'Kalos', 'Alola', 'Galar'])
-        labelLayout.addWidget(combobox)
+        combobox1 = QComboBox()
+        combobox1.addItems([ 'All', 'Kanto', 'Johto', 'Hoenn', 'Sinnoh', 'Unova', 'Kalos'])
+        combobox1.setCurrentIndex = 'All'
+        labelLayout.addWidget(combobox1)
 
-        
+        def valueChanged(self):
+            heighttemp = slider1.value()
+            heightVar = str(heighttemp)
+            weightTemp= slider2.value()
+            weightVar = str(weightTemp)
+            fromVar = "pokemon"
+            nameVar = text1.text()
+            typeVar = combobox.currentText().lower()
+            regionVar = combobox1.currentText().lower()
+            if typeVar != 'all':
+                 fromVar = fromVar+", pokemon_types, types"
+            if regionVar != 'all':
+                fromVar = fromVar+", encounters, locations, location_areas, regions"
+            sqlquery= sqlquery = "SELECT DISTINCT(pokemon.pokemon_id), pokemon.identifier, pokemon.species_id, pokemon.height, pokemon.weight, pokemon.base_experience FROM "+ fromVar+" WHERE pokemon.height < "+heightVar+" AND pokemon.weight < "+weightVar
+            if typeVar != 'all':
+                sqlquery = sqlquery + """   AND pokemon.pokemon_id = pokemon_types.pokemon_id 
+                                            AND pokemon_types.type_id = types.type_id 
+                                            AND types.identifier LIKE '"""+typeVar+"'"
+            if regionVar != 'all':
+               sqlquery= sqlquery + """ AND pokemon.pokemon_id = encounters.pokemon_id 
+                                        AND location_areas.location_area_id = encounters.location_area_id 
+                                        AND location_areas.location_id = locations.location_id 
+                                        AND locations.region_id = regions.region_id 
+                                        AND regions.identifier 
+                                        LIKE '"""+ regionVar +"'"
+            if nameVar != "":
+               sqlquery = sqlquery + " AND pokemon.identifier LIKE '"+nameVar+"%'"
+            sqlquery = sqlquery + " ORDER BY pokemon.identifier"
+            
+            cur.execute(sqlquery)
+            tableUpdate(cur)
+
+        slider2.valueChanged.connect(valueChanged)
+        slider1.valueChanged.connect(valueChanged)
+        combobox.currentIndexChanged.connect(valueChanged)
+        combobox1.currentIndexChanged.connect(valueChanged)
+        text1.textChanged.connect(valueChanged)
+
+
         # select row in table
         def tableClicked(self):
             row = table.currentRow()
             #get the data from the table
             data = table.item(row, 1).text()
-           #print(data)
-            # select icon from icons folder
 
             # checks if shiny
             if checkbox.isChecked():
@@ -187,7 +213,7 @@ class window(QWidget):
             abilitiesLabel.setText('Abilities: ' + abilities)
 
             #show pokemon region
-            sqlquery ="""SELECT DISTINCT regions.identifier FROM pokemon, encounters, locations, location_areas, regions 
+            sqlquery ="""   SELECT DISTINCT regions.identifier FROM pokemon, encounters, locations, location_areas, regions 
                             WHERE pokemon.pokemon_id = encounters.pokemon_id 
                             AND location_areas.location_area_id = encounters.location_area_id 
                             AND location_areas.location_id = locations.location_id 
@@ -204,7 +230,7 @@ class window(QWidget):
             regionLabel.setText('Region: ' + region)
 
             #show pokemon type
-            sqlquery ="""SELECT DISTINCT types.identifier FROM pokemon, pokemon_types, types
+            sqlquery ="""   SELECT DISTINCT types.identifier FROM pokemon, pokemon_types, types
                             WHERE pokemon.pokemon_id = pokemon_types.pokemon_id
                             AND pokemon_types.type_id = types.type_id
                             AND pokemon.pokemon_id = '""" + str(data) + """';"""
