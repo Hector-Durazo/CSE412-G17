@@ -2,6 +2,7 @@ from cProfile import label
 from logging import PlaceHolder
 import os
 import sys, psycopg2
+from tkinter import Button
 from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtGui import QPixmap
 from PyQt5 import QtSql
@@ -79,10 +80,10 @@ class window(QWidget):
         slider1 = QSlider(Qt.Horizontal)
         slider1.setMinimum(0)
         slider1.setMaximum(30)
-        slider1.setValue(0)
+        slider1.setValue(30)
         labelLayout.addWidget(slider1,0, Qt.AlignBottom)
         label3 = QLabel(self)
-        label3.setText('0')
+        label3.setText('30')
         label3.setAlignment(Qt.AlignCenter)
         labelLayout.addWidget(label3, 0, Qt.AlignTop)
         slider1.valueChanged.connect(label3.setNum)
@@ -98,10 +99,10 @@ class window(QWidget):
         slider2 = QSlider(Qt.Horizontal)
         slider2.setMinimum(0)
         slider2.setMaximum(1000)
-        slider2.setValue(0)
+        slider2.setValue(1000)
         labelLayout.addWidget(slider2, 0, Qt.AlignBottom)
         label4 = QLabel(self)
-        label4.setText('0')
+        label4.setText('1000')
         label4.setAlignment(Qt.AlignCenter)
         labelLayout.addWidget(label4 , 0, Qt.AlignTop)
         slider2.valueChanged.connect(label4.setNum)
@@ -110,15 +111,40 @@ class window(QWidget):
         # Add type combobox to VBox
         combobox = QComboBox()
         combobox.addItems(['All', 'Fire', 'Water', 'Grass', 'Electric', 'Ice', 'Fighting', 'Poison', 'Ground', 'Flying', 'Psychic', 'Bug', 'Rock', 'Ghost', 'Dragon', 'Dark', 'Steel', 'Fairy'])
+        combobox.setCurrentText = 'All'
         labelLayout.addWidget(combobox)
 
 
         # Add Region combobox to VBox
-        combobox = QComboBox()
-        combobox.addItems([ 'All', 'Kanto', 'Johto', 'Hoenn', 'Sinnoh', 'Unova', 'Kalos'])
-        labelLayout.addWidget(combobox)
+        combobox1 = QComboBox()
+        combobox1.addItems([ 'All', 'Kanto', 'Johto', 'Hoenn', 'Sinnoh', 'Unova', 'Kalos'])
+        combobox1.setCurrentText = 'All'
+        labelLayout.addWidget(combobox1)
 
+        def buttonClicked(self):
+            heightvar = label3.text
+            weightvar = str(slider2.value)
+            nameVar = text1.text
+            typeVar = combobox.currentText()
+            regionVar = combobox1.currentText()
+            sqlquery= sqlquery = """SELECT pokemon.pokemon_id, pokemon.pokemon_identifier, pokemon.weight, pokemon.height FROM pokemon, encounters, locations, location_areas, regions, pokemon_types, types WHERE pokemon.height < {} AND pokemon.weight < {} """.format(heightvar, weightvar);
+            if typeVar != 'All':
+               sqlquery = sqlquery + " AND pokemon.pokemon_id = pokemon_types.pokemon_id AND pokemon_types.type_id = types.type_id AND types.identifier LIKE '"+typeVar+"'"
+            if regionVar != 'All':
+               sqlquery= sqlquery+" AND pokemon.pokemon_id = encounters.pokemon_id AND location_areas.location_area_id = encounters.location_area_id AND location_areas.location_id = locations.location_id AND locations.region_id = regions.region_id AND regions.identifier LIKE '"+ regionVar +"'"
+            if nameVar != "":
+               sqlquery = sqlquery + " pokemon.identifier LIKE '{}%'".format(nameVar)
+            
+            cur.execute(sqlquery)
+            tableUpdate(cur)
+
+        #Add button to combobox
+        startButton = QPushButton("Search!")
+        startButton.clicked.connect(buttonClicked)
+        labelLayout.addWidget(startButton)
         
+       
+            
         # select row in table
         def tableClicked(self):
             row = table.currentRow()
