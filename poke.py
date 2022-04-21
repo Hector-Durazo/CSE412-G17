@@ -1,11 +1,8 @@
-from cProfile import label
-from logging import PlaceHolder
 import os
 import sys, psycopg2
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtGui import QPixmap
-from PyQt5 import QtSql
-from PyQt5.QtWidgets import QApplication,QSlider,QComboBox, QMainWindow, QHeaderView, QAbstractItemView, QPushButton, QTableWidget, QTableWidgetItem, QVBoxLayout, QHBoxLayout, QWidget, QLabel, QLineEdit
+from PyQt5.QtWidgets import QApplication,QSlider,QComboBox, QAbstractItemView, QTableWidget, QTableWidgetItem, QVBoxLayout, QHBoxLayout, QWidget, QLabel, QLineEdit
 from PyQt5.QtCore import Qt
 
 
@@ -13,7 +10,7 @@ from PyQt5.QtCore import Qt
 class window(QWidget):
     def __init__(self):
         super().__init__()
-        self.resize(1200, 600)
+        self.resize(1000, 600)
         self.setWindowTitle("Pokemon Database")
         mainLayout = QHBoxLayout()
         # change window title icon to pokemon logo
@@ -79,40 +76,31 @@ class window(QWidget):
         imagelabel.setAlignment(Qt.AlignCenter)
         labelLayout.addWidget(imagelabel)
 
-
-        def search(self):
-            sqlquery = "SELECT * FROM pokemon WHERE pokemon.identifier LIKE'" + text1.text() + "%'"
-            cur.execute(sqlquery)
-            tableUpdate(cur)
-
         # Add search bar to VBox
         text1 = QLineEdit()
         text1.setPlaceholderText('Search')
         labelLayout.addWidget(text1)
-        text1.textChanged.connect(search)
+        #text1.textChanged.connect(valueChanged)
 
-
-        # Add Slider to VBox
-        def slider1Changed(self):
-            sqlquery = "SELECT * FROM pokemon WHERE pokemon.height < " + str(slider1.value())
-            cur.execute(sqlquery)
-            tableUpdate(cur)
-
+        def updateLabel(value):
+            label3.setText(str(value/10))
+            decVal = value/10
         heightLabel = QLabel(self)
         heightLabel.setText('Max height (M)')
         heightLabel.setAlignment(Qt.AlignCenter)
         labelLayout.addWidget(heightLabel)
         slider1 = QSlider(Qt.Horizontal)
         slider1.setMinimum(0)
-        slider1.setMaximum(30)
-        slider1.setValue(0)
+        slider1.setMaximum(300)
+        slider1.setValue(300)
         labelLayout.addWidget(slider1,0, Qt.AlignBottom)
         label3 = QLabel(self)
-        label3.setText('0')
+        label3.setText('30.0')
         label3.setAlignment(Qt.AlignCenter)
         labelLayout.addWidget(label3, 0, Qt.AlignTop)
-        slider1.valueChanged.connect(label3.setNum)
-        slider1.valueChanged.connect(slider1Changed)
+        slider1.valueChanged.connect(updateLabel)
+
+
         
 
         # Add Slider to VBox
@@ -124,10 +112,10 @@ class window(QWidget):
         slider2 = QSlider(Qt.Horizontal)
         slider2.setMinimum(0)
         slider2.setMaximum(1000)
-        slider2.setValue(0)
+        slider2.setValue(1000)
         labelLayout.addWidget(slider2, 0, Qt.AlignBottom)
         label4 = QLabel(self)
-        label4.setText('0')
+        label4.setText('1000')
         label4.setAlignment(Qt.AlignCenter)
         labelLayout.addWidget(label4 , 0, Qt.AlignTop)
         slider2.valueChanged.connect(label4.setNum)
@@ -135,23 +123,62 @@ class window(QWidget):
 
         # Add type combobox to VBox
         combobox = QComboBox()
-        combobox.addItems(['All', 'Fire', 'Water', 'Grass', 'Electric', 'Ice', 'Fighting', 'Poison', 'Ground', 'Flying', 'Psychic', 'Bug', 'Rock', 'Ghost', 'Dragon', 'Dark', 'Steel', 'Fairy'])
+        combobox.addItems([ 'All','Normal' ,'Fire', 'Water', 'Grass', 'Electric', 'Ice', 'Fighting', 'Poison', 'Ground', 
+                            'Flying', 'Psychic', 'Bug', 'Rock', 'Ghost', 'Dragon', 'Dark', 'Steel', 'Fairy', 'Unknown', 'Shadow'])
         labelLayout.addWidget(combobox)
 
 
         # Add Region combobox to VBox
-        combobox = QComboBox()
-        combobox.addItems([ 'All', 'Kanto', 'Johto', 'Hoenn', 'Sinnoh', 'Unova', 'Kalos', 'Alola', 'Galar'])
-        labelLayout.addWidget(combobox)
+        combobox1 = QComboBox()
+        combobox1.addItems([ 'All', 'Kanto', 'Johto', 'Hoenn', 'Sinnoh', 'Unova', 'Kalos'])
+        combobox1.setCurrentIndex = 'All'
+        labelLayout.addWidget(combobox1)
 
-        
+
+        def valueChanged(self):
+            heighttemp = slider1.value()
+            heightVar = str(heighttemp)
+            weightTemp= slider2.value()
+            weightVar = str(weightTemp)
+            fromVar = "pokemon"
+            nameVar = text1.text()
+            typeVar = combobox.currentText().lower()
+            regionVar = combobox1.currentText().lower()
+            if typeVar != 'all':
+                 fromVar = fromVar+", pokemon_types, types"
+            if regionVar != 'all':
+                fromVar = fromVar+", encounters, locations, location_areas, regions"
+            sqlquery= sqlquery = "SELECT DISTINCT(pokemon.pokemon_id), pokemon.identifier, pokemon.species_id, pokemon.height, pokemon.weight, pokemon.base_experience FROM "+ fromVar+" WHERE pokemon.height < "+heightVar+" AND pokemon.weight < "+weightVar
+            if typeVar != 'all':
+                sqlquery = sqlquery + """   AND pokemon.pokemon_id = pokemon_types.pokemon_id 
+                                            AND pokemon_types.type_id = types.type_id 
+                                            AND types.identifier LIKE '"""+typeVar+"'"
+            if regionVar != 'all':
+               sqlquery= sqlquery + """ AND pokemon.pokemon_id = encounters.pokemon_id 
+                                        AND location_areas.location_area_id = encounters.location_area_id 
+                                        AND location_areas.location_id = locations.location_id 
+                                        AND locations.region_id = regions.region_id 
+                                        AND regions.identifier 
+                                        LIKE '"""+ regionVar +"'"
+            if nameVar != "":
+               sqlquery = sqlquery + " AND pokemon.identifier LIKE '"+nameVar+"%'"
+
+            
+            cur.execute(sqlquery)
+            tableUpdate(cur)
+
+        slider2.valueChanged.connect(valueChanged)
+        slider1.valueChanged.connect(valueChanged)
+        combobox.currentIndexChanged.connect(valueChanged)
+        combobox1.currentIndexChanged.connect(valueChanged)
+        text1.textChanged.connect(valueChanged)
+
+
         # select row in table
         def tableClicked(self):
             row = table.currentRow()
             #get the data from the table
             data = table.item(row, 1).text()
-           #print(data)
-            # select icon from icons folder
 
             # checks if shiny
             if checkbox.isChecked():
@@ -160,11 +187,10 @@ class window(QWidget):
                 icons = 'icons'
 
 
-            #print('icons: '+ icons)
             for icon in os.listdir(icons):
                 if icon == data + '.png':
                     icon = QPixmap( icons +'/' + data + '.png')
-                    icon = icon.scaled(400, 400, Qt.KeepAspectRatio)
+                    icon = icon.scaled(500, 400, Qt.KeepAspectRatio)
                     iconLabel.setPixmap(icon)
                     iconLabel.setAlignment(Qt.AlignCenter)
                     break
@@ -187,7 +213,7 @@ class window(QWidget):
             abilitiesLabel.setText('Abilities: ' + abilities)
 
             #show pokemon region
-            sqlquery ="""SELECT DISTINCT regions.identifier FROM pokemon, encounters, locations, location_areas, regions 
+            sqlquery ="""   SELECT DISTINCT regions.identifier FROM pokemon, encounters, locations, location_areas, regions 
                             WHERE pokemon.pokemon_id = encounters.pokemon_id 
                             AND location_areas.location_area_id = encounters.location_area_id 
                             AND location_areas.location_id = locations.location_id 
@@ -204,7 +230,7 @@ class window(QWidget):
             regionLabel.setText('Region: ' + region)
 
             #show pokemon type
-            sqlquery ="""SELECT DISTINCT types.identifier FROM pokemon, pokemon_types, types
+            sqlquery ="""   SELECT DISTINCT types.identifier FROM pokemon, pokemon_types, types
                             WHERE pokemon.pokemon_id = pokemon_types.pokemon_id
                             AND pokemon_types.type_id = types.type_id
                             AND pokemon.pokemon_id = '""" + str(data) + """';"""
@@ -220,20 +246,20 @@ class window(QWidget):
             #show pokemon weight and hight
             weight = table.item(row, 3).text()
             height = table.item(row, 2).text()
-            weightHightLabel.setText('Weight: ' + weight + ' Kg' + '\n\n' + 'Height: ' + height + ' M')
+            weightHightLabel.setText('Weight: ' + weight + ' Kg' + ', ' + 'Height: ' + height + ' M')
 
 
                     
 
         #create table
         table = QTableWidget()
-        table.setFixedWidth(555)
+        table.setFixedWidth(405)
         table.setRowCount(0)
         table.setColumnCount(4)
         table.setColumnWidth(0, 100)
         table.setColumnWidth(1, 150)
-        table.setColumnWidth(2, 150)
-        table.setColumnWidth(3, 100)
+        table.setColumnWidth(2, 50)
+        table.setColumnWidth(3, 50)
         table.setRowHeight(0, 30)
         table.setHorizontalHeaderLabels(['id','Name', 'Height', 'Weight'])
         table.setSelectionBehavior(QAbstractItemView.SelectRows)
@@ -256,8 +282,6 @@ class window(QWidget):
         sqlquery = "SELECT * FROM pokemon"
         cur.execute(sqlquery)
         tableUpdate(cur)
-
-
 
 
         # Add widgets to mainLayout
