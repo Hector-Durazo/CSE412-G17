@@ -1,11 +1,8 @@
-from cProfile import label
-from logging import PlaceHolder
 import os
 import sys, psycopg2
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtGui import QPixmap
-from PyQt5 import QtSql
-from PyQt5.QtWidgets import QApplication,QSlider,QComboBox, QMainWindow, QHeaderView, QAbstractItemView, QPushButton, QTableWidget, QTableWidgetItem, QVBoxLayout, QHBoxLayout, QWidget, QLabel, QLineEdit
+from PyQt5.QtWidgets import QApplication,QSlider,QComboBox, QAbstractItemView, QTableWidget, QTableWidgetItem, QVBoxLayout, QHBoxLayout, QWidget, QLabel, QLineEdit
 from PyQt5.QtCore import Qt
 
 
@@ -13,7 +10,7 @@ from PyQt5.QtCore import Qt
 class window(QWidget):
     def __init__(self):
         super().__init__()
-        self.resize(1200, 600)
+        self.resize(1000, 600)
         self.setWindowTitle("Pokemon Database")
         mainLayout = QHBoxLayout()
         # change window title icon to pokemon logo
@@ -85,21 +82,24 @@ class window(QWidget):
         labelLayout.addWidget(text1)
         #text1.textChanged.connect(valueChanged)
 
-
+        def updateLabel(value):
+            label3.setText(str(value/10))
+            decVal = value/10
         heightLabel = QLabel(self)
         heightLabel.setText('Max height (M)')
         heightLabel.setAlignment(Qt.AlignCenter)
         labelLayout.addWidget(heightLabel)
         slider1 = QSlider(Qt.Horizontal)
         slider1.setMinimum(0)
-        slider1.setMaximum(30)
-        slider1.setValue(30)
+        slider1.setMaximum(300)
+        slider1.setValue(300)
         labelLayout.addWidget(slider1,0, Qt.AlignBottom)
         label3 = QLabel(self)
-        label3.setText('0')
+        label3.setText('30.0')
         label3.setAlignment(Qt.AlignCenter)
         labelLayout.addWidget(label3, 0, Qt.AlignTop)
-        slider1.valueChanged.connect(label3.setNum)
+        slider1.valueChanged.connect(updateLabel)
+
 
         
 
@@ -115,7 +115,7 @@ class window(QWidget):
         slider2.setValue(1000)
         labelLayout.addWidget(slider2, 0, Qt.AlignBottom)
         label4 = QLabel(self)
-        label4.setText('0')
+        label4.setText('1000')
         label4.setAlignment(Qt.AlignCenter)
         labelLayout.addWidget(label4 , 0, Qt.AlignTop)
         slider2.valueChanged.connect(label4.setNum)
@@ -123,8 +123,8 @@ class window(QWidget):
 
         # Add type combobox to VBox
         combobox = QComboBox()
-        combobox.addItems([ 'All', 'Fire', 'Water', 'Grass', 'Electric', 'Ice', 'Fighting', 'Poison', 'Ground', 
-                            'Flying', 'Psychic', 'Bug', 'Rock', 'Ghost', 'Dragon', 'Dark', 'Steel', 'Fairy'])
+        combobox.addItems([ 'All','Normal' ,'Fire', 'Water', 'Grass', 'Electric', 'Ice', 'Fighting', 'Poison', 'Ground', 
+                            'Flying', 'Psychic', 'Bug', 'Rock', 'Ghost', 'Dragon', 'Dark', 'Steel', 'Fairy', 'Unknown', 'Shadow'])
         labelLayout.addWidget(combobox)
 
 
@@ -133,6 +133,7 @@ class window(QWidget):
         combobox1.addItems([ 'All', 'Kanto', 'Johto', 'Hoenn', 'Sinnoh', 'Unova', 'Kalos'])
         combobox1.setCurrentIndex = 'All'
         labelLayout.addWidget(combobox1)
+
 
         def valueChanged(self):
             heighttemp = slider1.value()
@@ -161,7 +162,7 @@ class window(QWidget):
                                         LIKE '"""+ regionVar +"'"
             if nameVar != "":
                sqlquery = sqlquery + " AND pokemon.identifier LIKE '"+nameVar+"%'"
-            sqlquery = sqlquery + " ORDER BY pokemon.identifier"
+
             
             cur.execute(sqlquery)
             tableUpdate(cur)
@@ -186,11 +187,10 @@ class window(QWidget):
                 icons = 'icons'
 
 
-            #print('icons: '+ icons)
             for icon in os.listdir(icons):
                 if icon == data + '.png':
                     icon = QPixmap( icons +'/' + data + '.png')
-                    icon = icon.scaled(400, 400, Qt.KeepAspectRatio)
+                    icon = icon.scaled(500, 400, Qt.KeepAspectRatio)
                     iconLabel.setPixmap(icon)
                     iconLabel.setAlignment(Qt.AlignCenter)
                     break
@@ -246,20 +246,20 @@ class window(QWidget):
             #show pokemon weight and hight
             weight = table.item(row, 3).text()
             height = table.item(row, 2).text()
-            weightHightLabel.setText('Weight: ' + weight + ' Kg' + '\n\n' + 'Height: ' + height + ' M')
+            weightHightLabel.setText('Weight: ' + weight + ' Kg' + ', ' + 'Height: ' + height + ' M')
 
 
                     
 
         #create table
         table = QTableWidget()
-        table.setFixedWidth(555)
+        table.setFixedWidth(405)
         table.setRowCount(0)
         table.setColumnCount(4)
         table.setColumnWidth(0, 100)
         table.setColumnWidth(1, 150)
-        table.setColumnWidth(2, 150)
-        table.setColumnWidth(3, 100)
+        table.setColumnWidth(2, 50)
+        table.setColumnWidth(3, 50)
         table.setRowHeight(0, 30)
         table.setHorizontalHeaderLabels(['id','Name', 'Height', 'Weight'])
         table.setSelectionBehavior(QAbstractItemView.SelectRows)
@@ -282,8 +282,6 @@ class window(QWidget):
         sqlquery = "SELECT * FROM pokemon"
         cur.execute(sqlquery)
         tableUpdate(cur)
-
-
 
 
         # Add widgets to mainLayout
