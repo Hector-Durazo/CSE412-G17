@@ -84,6 +84,7 @@ class window(QWidget):
 
         def updateLabel(value):
             label3.setText(str(value/10))
+            decVal = value/10
         heightLabel = QLabel(self)
         heightLabel.setText('Max height (M)')
         heightLabel.setAlignment(Qt.AlignCenter)
@@ -108,43 +109,30 @@ class window(QWidget):
         weightLabel.setAlignment(Qt.AlignCenter)
         labelLayout.addWidget(weightLabel)
 
-
-        def updateLabel(value):
-            label4.setText(str(value/10))
-
         slider2 = QSlider(Qt.Horizontal)
         slider2.setMinimum(0)
-        slider2.setMaximum(10000)
-        slider2.setValue(10000)
+        slider2.setMaximum(1000)
+        slider2.setValue(1000)
         labelLayout.addWidget(slider2, 0, Qt.AlignBottom)
         label4 = QLabel(self)
         label4.setText('1000')
         label4.setAlignment(Qt.AlignCenter)
         labelLayout.addWidget(label4 , 0, Qt.AlignTop)
-        slider2.valueChanged.connect(updateLabel)
+        slider2.valueChanged.connect(label4.setNum)
 
 
         # Add type combobox to VBox
-        comboLab = QLabel('Type:')
-        comboLab.setAlignment(Qt.AlignCenter)
-        
         combobox = QComboBox()
         combobox.addItems([ 'All','Normal' ,'Fire', 'Water', 'Grass', 'Electric', 'Ice', 'Fighting', 'Poison', 'Ground', 
                             'Flying', 'Psychic', 'Bug', 'Rock', 'Ghost', 'Dragon', 'Dark', 'Steel', 'Fairy', 'Unknown', 'Shadow'])
-        labelLayout.addWidget(comboLab)
         labelLayout.addWidget(combobox)
 
 
         # Add Region combobox to VBox
-        comboLab1 = QLabel('Region:')
-        comboLab1.setAlignment(Qt.AlignCenter)
-        
         combobox1 = QComboBox()
         combobox1.addItems([ 'All', 'Kanto', 'Johto', 'Hoenn', 'Sinnoh', 'Unova', 'Kalos'])
         combobox1.setCurrentIndex = 'All'
-        labelLayout.addWidget(comboLab1)
         labelLayout.addWidget(combobox1)
-
 
 
         def valueChanged(self):
@@ -278,7 +266,6 @@ class window(QWidget):
         table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         table.cellClicked.connect(tableClicked)
 
-        
     
         def tableUpdate(cur):
             table.setRowCount(cur.rowcount)
