@@ -11,6 +11,7 @@ User Manual:
 
 Poke-Base offers users the ability to search a variety of pokemons based on their name, types, habitats(regions), weights and heights. The application runs on multiple platforms such as Linux and Window devices locally. When the user first turns on the application, the main page will look like the image shown below
 ![image9](https://user-images.githubusercontent.com/68206892/164587492-06c0cdf8-e2c0-48f8-97e0-79af950420c6.png)
+
 To begin browsing the pokemons that Poke-Base has to offer, the user must look on the left side of the application. There is one search box, two sliders for height and weight, and two dropdown menus to filter pokemon type and region for efficient exploration. Our application will filter the database live, so there is no need for a search button to begin the query. To get an image and a summary of the pokemon on the right of the table, click on the row of the pokemon you are wanting to see.
 
 Below are examples of just using one filter at a time. Zoom into the picture to get a better resolution.
